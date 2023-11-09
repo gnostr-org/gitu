@@ -293,3 +293,6 @@ confdefs.h
 conftest.c
 conftest.err
 **.DS_Store
+
+#rust
+target
