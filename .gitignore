@@ -292,3 +292,4 @@ Release/
 confdefs.h
 conftest.c
 conftest.err
+**.DS_Store
