@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 **.DS_Store
 
 /fuzz_corpora
@@ -296,3 +297,8 @@ conftest.err
 
 #rust
 target
+/target
+*.snap.new
+/gitu.log
+.direnv
+result
