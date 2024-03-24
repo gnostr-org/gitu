@@ -1,5 +1,5 @@
 [package]
-name = "gitu"
+name = "gnostr-git"
 description = "A git client inspired by Magit"
 version = "0.10.0"
 edition = "2021"
