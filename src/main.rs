@@ -1,5 +1,5 @@
 use clap::Parser;
-use gitu::{cli::Args, term, Res};
+use gnostr_git::{cli::Args, term, Res};
 use log::LevelFilter;
 use ratatui::Terminal;
 use std::{backtrace::Backtrace, panic};
@@ -10,12 +10,12 @@ pub fn main() -> Res<()> {
     if args.version {
         // Setting cargo_suffix enables falling back to Cargo.toml for version
         // `cargo install --locked gitu` would fail otherwise, as there's no git repo
-        println!("gitu {}", git_version::git_version!(cargo_suffix = ""));
+        println!("gnostr-git {}", git_version::git_version!(cargo_suffix = ""));
         return Ok(());
     }
 
     if args.log {
-        simple_logging::log_to_file("gitu.log", LevelFilter::Trace)?;
+        simple_logging::log_to_file("gnostr-git.log", LevelFilter::Trace)?;
     }
 
     panic::set_hook(Box::new(|panic_info| {
@@ -43,5 +43,5 @@ fn setup_term_and_run(args: &Args) -> Res<()> {
     terminal.hide_cursor()?;
 
     log::debug!("Starting app");
-    gitu::run(args, &mut terminal)
+    gnostr_git::run(args, &mut terminal)
 }
