@@ -179,8 +179,6 @@ more:## 	more help
 	@sed -n 's/^##//p' ${MAKEFILE_LIST} | column -t -s ':' |  sed -e 's/^/	/'
 	#$(MAKE) -f Makefile help
 
--include Makefile
-
 ##initialize
 ##	git submodule update --init --recursive
 initialize:## 	ensure submodules exist
@@ -450,14 +448,8 @@ nvm: ## 	nvm
 nvm-clean: ## 	nvm-clean
 	@rm -rf ~/.nvm
 
--include gnostr.mk
--include gnostr-act.mk
--include gnostr-bot.mk
--include docker.mk
--include venv.mk
--include clean.mk
 -include cargo.mk
--include tests.mk
+-include Makefile
 
 # vim: set noexpandtab:
 # vim: set setfiletype make
