@@ -30,8 +30,8 @@ cargo-br:cargo-build-release### 	cargo-br
 ## 	cargo-br q=true
 cargo-build-release:### 	cargo-build-release
 ## 	cargo-build-release q=true
-	@. $(HOME)/.cargo/env
-	@cargo b --release $(QUIET)
+	. $(HOME)/.cargo/env
+	cargo b --release
 cargo-check:### 	cargo-check
 	@. $(HOME)/.cargo/env
 	@cargo c
