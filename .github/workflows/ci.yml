@@ -49,7 +49,7 @@ jobs:
       uses: codecov/codecov-action@v4.1.0
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-        slug: altsem/gitu
+        slug: gnostr-org/gnostr-git
 
   test:
     strategy:
