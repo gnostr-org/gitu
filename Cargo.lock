@@ -530,7 +530,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "gitu"
+name = "gnostr-git"
 version = "0.10.0"
 dependencies = [
  "chrono",
