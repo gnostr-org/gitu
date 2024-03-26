@@ -886,12 +886,13 @@ BUILT_INS += gnostr-git-status$X
 BUILT_INS += gnostr-git-switch$X
 BUILT_INS += gnostr-git-version$X
 BUILT_INS += gnostr-git-whatchanged$X
+BUILT_INS += git$X
 
 # what 'all' will build but not install in gitexecdir
-OTHER_PROGRAMS += gnostr-git$X
 OTHER_PROGRAMS += scalar$X
 
 # what test wrappers are needed and 'install' will install, in bindir
+BINDIR_PROGRAMS_NEED_X += git
 BINDIR_PROGRAMS_NEED_X += gnostr-git
 BINDIR_PROGRAMS_NEED_X += scalar
 BINDIR_PROGRAMS_NEED_X += gnostr-git-receive-pack
@@ -2400,6 +2401,10 @@ gnostr-git.sp gnostr-git.s gnostr-git.o: EXTRA_CPPFLAGS = \
 gnostr-git$X: gnostr-git.o GIT-LDFLAGS $(BUILTIN_OBJS) $(GITLIBS)
 	$(QUIET_LINK)$(CC) $(ALL_CFLAGS) -o $@ $(ALL_LDFLAGS) \
 		$(filter %.o,$^) $(LIBS)
+
+##git$X: gnostr-git.o GIT-LDFLAGS $(BUILTIN_OBJS) $(GITLIBS)
+##	$(QUIET_LINK)$(CC) $(ALL_CFLAGS) -o $@ $(ALL_LDFLAGS) \
+##		$(filter %.o,$^) $(LIBS)
 
 help.sp help.s help.o: command-list.h
 builtin/bugreport.sp builtin/bugreport.s builtin/bugreport.o: hook-list.h
