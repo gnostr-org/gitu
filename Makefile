@@ -1428,11 +1428,11 @@ ALL_COMMANDS_TO_INSTALL = $(ALL_PROGRAMS)
 ifeq (,$(SKIP_DASHED_BUILT_INS))
 ALL_COMMANDS_TO_INSTALL += $(BUILT_INS)
 else
-# git-upload-pack, git-receive-pack and git-upload-archive are special: they
+# gnostr-git-upload-pack, gnostr-git-receive-pack and gnostr-git-upload-archive are special: they
 # are _expected_ to be present in the `bin/` directory in their dashed form.
-ALL_COMMANDS_TO_INSTALL += git-receive-pack$(X)
-ALL_COMMANDS_TO_INSTALL += git-upload-archive$(X)
-ALL_COMMANDS_TO_INSTALL += git-upload-pack$(X)
+ALL_COMMANDS_TO_INSTALL += gnostr-git-receive-pack$(X)
+ALL_COMMANDS_TO_INSTALL += gnostr-git-upload-archive$(X)
+ALL_COMMANDS_TO_INSTALL += gnostr-git-upload-pack$(X)
 endif
 
 ALL_CFLAGS = $(DEVELOPER_CFLAGS) $(CPPFLAGS) $(CFLAGS)
