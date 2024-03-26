@@ -1,4 +1,4 @@
-name: CI
+name: main.yml
 
 on: [push, pull_request]
 
