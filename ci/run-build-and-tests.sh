@@ -47,7 +47,7 @@ esac
 group Build make
 if test -n "$run_tests"
 then
-	group "Run tests" make test ||
+	group "Run tests" make all test ||
 	handle_failed_tests
 fi
 check_unignored_build_artifacts
