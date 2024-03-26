@@ -34,7 +34,7 @@ macos-*)
 	export HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_NO_INSTALL_CLEANUP=1
 
 	# Uncomment this if you want to run perf tests:
-	brew install gnu-time
+	brew install gnu-time clang
 
 	test -z "$BREW_INSTALL_PACKAGES" ||
 	brew install $BREW_INSTALL_PACKAGES
