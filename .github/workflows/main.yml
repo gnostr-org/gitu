@@ -394,5 +394,5 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - run: ci/install-dependencies.sh
-    - run: maek git
+    - run: make git
     - run: ci/test-documentation.sh
