@@ -82,16 +82,19 @@ pub(crate) enum Op {
     Stage,
     Unstage,
 
-    Menu(Menu),
+    Submenu(SubmenuOp),
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug)]
-pub(crate) enum Menu {
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Default)]
+pub(crate) enum SubmenuOp {
+    Any,
     Branch,
     Commit,
     Fetch,
     Help,
     Log,
+    #[default]
+    None,
     Pull,
     Push,
     Rebase,
@@ -103,7 +106,7 @@ impl Op {
     pub fn implementation(self) -> Box<dyn OpTrait> {
         match self {
             Op::Quit => Box::new(editor::Quit),
-            Op::Menu(menu) => Box::new(editor::Menu(menu)),
+            Op::Submenu(submenu) => Box::new(editor::Submenu(submenu)),
             Op::Refresh => Box::new(editor::Refresh),
             Op::ToggleSection => Box::new(editor::ToggleSection),
             Op::MoveDown => Box::new(editor::MoveDown),
@@ -147,19 +150,21 @@ impl Op {
     }
 }
 
-impl Display for Menu {
+impl Display for SubmenuOp {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(match self {
-            Menu::Branch => "Branch",
-            Menu::Commit => "Commit",
-            Menu::Fetch => "Fetch",
-            Menu::Help => "Help",
-            Menu::Log => "Log",
-            Menu::Pull => "Pull",
-            Menu::Push => "Push",
-            Menu::Rebase => "Rebase",
-            Menu::Reset => "Reset",
-            Menu::Stash => "Stash",
+            SubmenuOp::Any => "Any",
+            SubmenuOp::Branch => "Branch",
+            SubmenuOp::Commit => "Commit",
+            SubmenuOp::Fetch => "Fetch",
+            SubmenuOp::Help => "Help",
+            SubmenuOp::Log => "Log",
+            SubmenuOp::None => "None",
+            SubmenuOp::Pull => "Pull",
+            SubmenuOp::Push => "Push",
+            SubmenuOp::Rebase => "Rebase",
+            SubmenuOp::Reset => "Reset",
+            SubmenuOp::Stash => "Stash",
         })
     }
 }

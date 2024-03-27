@@ -2,8 +2,8 @@ use crate::config::Config;
 use crate::items::Item;
 use crate::keybinds;
 use crate::keybinds::Keybind;
-use crate::ops::Menu;
 use crate::ops::Op;
+use crate::ops::SubmenuOp;
 use crate::state::State;
 use crate::CmdMetaBuffer;
 use itertools::EitherOrBoth;
@@ -28,8 +28,12 @@ pub(crate) fn ui(frame: &mut Frame, state: &mut State) {
     } else if let Some(ref cmd) = state.cmd_meta_buffer {
         let text = format_command(&state.config, cmd);
         (text.lines.len(), command_popup(text))
-    } else if let Some(ref menu) = state.pending_menu {
-        format_keybinds_menu(&state.config, menu, state.screen().get_selected_item())
+    } else if state.pending_submenu_op != SubmenuOp::None {
+        format_keybinds_menu(
+            &state.config,
+            &state.pending_submenu_op,
+            state.screen().get_selected_item(),
+        )
     } else {
         (0, Popup::None)
     };
@@ -83,7 +87,7 @@ fn format_command<'a>(config: &Config, cmd: &'a CmdMetaBuffer) -> Text<'a> {
 
 fn format_keybinds_menu<'b>(
     config: &Config,
-    pending: &'b Menu,
+    pending: &'b SubmenuOp,
     item: &'b Item,
 ) -> (usize, Popup<'b>) {
     let style = &config.style;
@@ -98,7 +102,7 @@ fn format_keybinds_menu<'b>(
         .iter()
         .group_by(|bind| bind.op)
         .into_iter()
-        .filter(|(op, _binds)| !matches!(op, Op::Menu(_)))
+        .filter(|(op, _binds)| !matches!(op, Op::Submenu(_)))
     {
         pending_binds_column.push(Line::from(vec![
             Span::styled(
@@ -112,23 +116,23 @@ fn format_keybinds_menu<'b>(
         ]));
     }
 
-    let menus = non_target_binds
+    let submenus = non_target_binds
         .iter()
-        .filter(|bind| matches!(bind.op, Op::Menu(_)))
+        .filter(|bind| matches!(bind.op, Op::Submenu(_)))
         .collect::<Vec<_>>();
 
-    let mut menu_binds_column = vec![];
-    if !menus.is_empty() {
-        menu_binds_column.push(Line::styled("Submenu", &style.command));
+    let mut submenu_binds_column = vec![];
+    if !submenus.is_empty() {
+        submenu_binds_column.push(Line::styled("Submenu", &style.command));
     }
-    for bind in menus {
-        let Op::Menu(menu) = bind.op else {
+    for bind in submenus {
+        let Op::Submenu(submenu) = bind.op else {
             unreachable!();
         };
 
-        menu_binds_column.push(Line::from(vec![
+        submenu_binds_column.push(Line::from(vec![
             Span::styled(Keybind::format_key(bind), &style.hotkey),
-            Span::styled(format!(" {}", menu), Style::new()),
+            Span::styled(format!(" {}", submenu), Style::new()),
         ]));
     }
 
@@ -159,7 +163,7 @@ fn format_keybinds_menu<'b>(
 
     let rows = pending_binds_column
         .into_iter()
-        .zip_longest(menu_binds_column)
+        .zip_longest(submenu_binds_column)
         .zip_longest(target_binds_column)
         .map(|lines| {
             let (ab, c) = lines.or(
