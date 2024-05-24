@@ -1,5 +1,5 @@
 use clap::Parser;
-use gnostr_git::{cli::Args, term, Res};
+use gnostr_ui::{cli::Args, term, Res};
 use log::LevelFilter;
 use ratatui::Terminal;
 use std::{backtrace::Backtrace, panic};
@@ -43,5 +43,5 @@ fn setup_term_and_run(args: &Args) -> Res<()> {
     terminal.hide_cursor()?;
 
     log::debug!("Starting app");
-    gnostr_git::run(args, &mut terminal)
+    gnostr_ui::run(args, &mut terminal)
 }
