@@ -16,6 +16,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
     - name: Cache
       uses: actions/cache@v4
@@ -37,3 +39,54 @@ jobs:
     - name: gnostr --help
       shell: bash
       run: gnostr --help
+
+    - name: gnostr custom-event --help
+      shell: bash
+      run: gnostr custom-event --help
+      
+    # NIP-34 kind:1617 — publish a Nostr patch event when a pull request is opened or updated.
+    # See https://github.com/nostr-protocol/nips/blob/master/34.md
+    - name: NIP-34 patch event (pull_request)
+      if: github.event_name == 'pull_request'
+      env:
+        NOSTR_SEC: ${{ secrets.NOSTR_SEC }}
+      shell: bash
+      run: |
+        if [ -z "$NOSTR_SEC" ]; then
+          echo "NOSTR_SEC not configured — skipping NIP-34 kind:1617 patch event"
+          exit 0
+        fi
+        PATCH=$(git format-patch origin/${{ github.base_ref }}...HEAD --stdout)
+        gnostr \
+          --nsec "$NOSTR_SEC" \
+          custom-event \
+          --kind 1617 \
+          --content "$PATCH" \
+          --tags "a|30617:${{ github.repository }}" \
+          --tags "r|${{ github.event.pull_request.base.sha }}" \
+          --tags "t|root" \
+          --tags "alt|git patch: PR #${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}"
+
+    # NIP-34 kind:30617 — publish a Nostr repo state announcement on every push to master.
+    # See https://github.com/nostr-protocol/nips/blob/master/34.md
+    - name: NIP-34 repo state event (push to master)
+      if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+      env:
+        NOSTR_SEC: ${{ secrets.NOSTR_SEC }}
+      shell: bash
+      run: |
+        if [ -z "$NOSTR_SEC" ]; then
+          echo "NOSTR_SEC not configured — skipping NIP-34 kind:30617 repo state event"
+          exit 0
+        fi
+        gnostr \
+          --nsec "$NOSTR_SEC" \
+          custom-event \
+          --kind 30617 \
+          --content "" \
+          --tags "d|${{ github.repository }}" \
+          --tags "r|${{ github.event.repository.clone_url }}" \
+          --tags "name|${{ github.event.repository.name }}" \
+          --tags "description|${{ github.event.repository.description }}" \
+          --tags "web|${{ github.event.repository.html_url }}" \
+          --tags "clone|${{ github.event.repository.clone_url }}"
