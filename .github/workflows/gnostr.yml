@@ -12,6 +12,9 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  # NIP-05 well-known identifiers from https://github.com/gnostr-org/.github/blob/master/.well-known/nostr.json
+  GNOSTR_PUB: "a34b99f22c790c4e36b2b3c2c35a36db06226e41c692fc82b8b56ac1c540c5bd"
+  RANDYMCMILLAN_PUB: "edfa27d49d2af37ee331e1225bb6ed1912c6d999281b36d8018ad99bc3573c29"
 
 jobs:
   gnostr:
@@ -70,7 +73,8 @@ jobs:
           set-metadata \
           --name "$REPO_NAME" \
           -p "https://avatars.githubusercontent.com/u/135379339?s=400&u=11cb72cccbc2b13252867099546074c50caef1ae&v=4" \
-          -b "https://raw.githubusercontent.com/gnostr-org/gnostr-icons/refs/heads/master/banner/1024x341.png"
+          -b "https://raw.githubusercontent.com/gnostr-org/gnostr-icons/refs/heads/master/banner/1024x341.png" \
+          --nip05 "gnostr@gnostr-org.github.io"
 
     # NIP-34 kind:30617 — publish a Nostr repository announcement on every push to master.
     # Declares the repository's existence, clone URL, and metadata to the Nostr network.
