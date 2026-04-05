@@ -99,6 +99,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 5. Build NIP-96 upload request (NIP-98 Authorization header)
     // ------------------------------------------------------------------
     let upload_request = nip96::UploadRequest::new(&keys, &config, &file_data).await?;
+    // Note: the Authorization value is a base64-encoded signed Nostr event
+    // (NIP-98), not the private key.  It is printed here only for debugging;
+    // do not log it in non-example, production code.
     println!("Authorization header: {}", upload_request.authorization());
     println!("Upload URL:           {}", upload_request.url());
 
