@@ -102,9 +102,6 @@ jobs:
 
     - name: Commit screenshot to vhs/screenshot.png
       run: |
-        # Authenticate with GITHUB_TOKEN so we can push
-        git remote set-url origin https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git
-
         cp screenshot.png vhs/screenshot.png
         git add vhs/screenshot.png
         if git diff --cached --quiet; then
