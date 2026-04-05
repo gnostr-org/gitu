@@ -54,6 +54,10 @@ jobs:
       shell: bash
       run: gnostr set-metadata --help
 
+    - name: gnostr query --help
+      shell: bash
+      run: gnostr query --help
+
     # NIP-0/1 kind:0 — publish a Nostr set_metadata event on every push to master.
     # Sets the profile metadata (name, picture, banner) for the Nostr identity associated with NOSTR_SEC.
     # See https://github.com/nostr-protocol/nips/blob/master/01.md and https://github.com/nostr-protocol/nips/blob/master/00.md
