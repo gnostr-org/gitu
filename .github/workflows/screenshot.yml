@@ -18,7 +18,7 @@ jobs:
   screenshot:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
 
     steps:
     - uses: actions/checkout@v4
@@ -98,6 +98,36 @@ jobs:
         name: gitu-screenshot-${{ github.sha }}
         path: screenshot.png
 
+    - name: Push screenshot to screenshots branch
+      run: |
+        # Authenticate with GITHUB_TOKEN so we can push
+        git remote set-url origin https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git
+
+        # Save the screenshot outside the working tree
+        cp screenshot.png /tmp/gitu-screenshot.png
+
+        # Switch to (or create) the screenshots branch
+        if git fetch origin screenshots 2>/dev/null; then
+          echo "screenshots branch exists — checking it out"
+          git checkout -B screenshots origin/screenshots
+        else
+          echo "screenshots branch not found — creating orphan branch"
+          git checkout --orphan screenshots
+          git rm -rf . || true
+        fi
+
+        cp /tmp/gitu-screenshot.png screenshot.png
+        git add screenshot.png
+        if git diff --cached --quiet; then
+          echo "screenshot unchanged — skipping commit"
+        else
+          git commit -m "screenshot: ${{ github.sha }}"
+          git push origin screenshots
+        fi
+
+        # Return to the previous branch/commit
+        git checkout -
+
     - name: Install cargo-binstall and gnostr
       continue-on-error: true
       run: |
@@ -116,14 +146,18 @@ jobs:
         fi
         SHA="${{ github.sha }}"
         SHORT_SHA="${SHA:0:7}"
+        PNG_URL="https://raw.githubusercontent.com/${{ github.repository }}/screenshots/screenshot.png"
         ARTIFACT_URL="${{ steps.upload_artifact.outputs.artifact-url }}"
-        NOTE="gitu screenshot @ $SHORT_SHA — artifact: $ARTIFACT_URL"
+        NOTE="gitu screenshot @ $SHORT_SHA — $PNG_URL"
         gnostr \
           --nsec "$NOSTR_SEC" \
           custom-event \
           --kind 1 \
           --content "$NOTE" \
+          --tags "r|$PNG_URL" \
           --tags "r|$ARTIFACT_URL" \
+          --tags "p|$GNOSTR_PUB" \
+          --tags "p|$RANDYMCMILLAN_PUB" \
           --tags "t|gitu" \
           --tags "t|screenshot" \
           --tags "alt|gitu TUI screenshot for commit $SHORT_SHA"
