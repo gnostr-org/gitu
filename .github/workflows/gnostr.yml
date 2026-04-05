@@ -40,6 +40,10 @@ jobs:
       shell: bash
       run: gnostr --help
 
+    - name: gnostr custom-event --help
+      shell: bash
+      run: gnostr custom-event --help
+      
     # NIP-34 kind:1617 — publish a Nostr patch event when a pull request is opened or updated.
     # See https://github.com/nostr-protocol/nips/blob/master/34.md
     - name: NIP-34 patch event (pull_request)
