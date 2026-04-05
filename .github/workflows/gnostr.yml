@@ -59,7 +59,7 @@ jobs:
       run: gnostr query --help
 
     # Query kind:0 (set-metadata) events for GNOSTR_PUB
-    - name: gnostr query kind:0 set-metadata events
+    - name: gnostr query kind:1 set-metadata events
       continue-on-error: true
       shell: bash
       run: |
@@ -85,7 +85,7 @@ jobs:
       run: |
         gnostr query \
           --authors "$GNOSTR_PUB" \
-          --kinds 30618 \
+          #--kinds 30618 \
           --limit 10
 
     # Query kind:1617 (NIP-34 patch) events for GNOSTR_PUB
@@ -115,7 +115,7 @@ jobs:
       run: |
         gnostr query \
           --authors "$GNOSTR_PUB" \
-          --kinds 1631 \
+          #--kinds 1631 \
           --limit 10
 
     # Query kind:1632 (NIP-34 closed status) events for GNOSTR_PUB
