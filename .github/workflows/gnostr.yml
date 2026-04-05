@@ -62,10 +62,10 @@ jobs:
           custom-event \
           --kind 1617 \
           --content "$PATCH" \
-          --tags a "30617:${{ github.repository }}" \
-          --tags r "${{ github.event.pull_request.base.sha }}" \
-          --tags t "root" \
-          --tags alt "git patch: PR #${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}"
+          --tags "a|30617:${{ github.repository }}" \
+          --tags "r|${{ github.event.pull_request.base.sha }}" \
+          --tags "t|root" \
+          --tags "alt|git patch: PR #${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}"
 
     # NIP-34 kind:30617 — publish a Nostr repo state announcement on every push to master.
     # See https://github.com/nostr-protocol/nips/blob/master/34.md
@@ -84,9 +84,9 @@ jobs:
           custom-event \
           --kind 30617 \
           --content "" \
-          --tags d "${{ github.repository }}" \
-          --tags r "${{ github.event.repository.clone_url }}" \
-          --tags name "${{ github.event.repository.name }}" \
-          --tags description "${{ github.event.repository.description }}" \
-          --tags web "${{ github.event.repository.html_url }}" \
-          --tags clone "${{ github.event.repository.clone_url }}"
+          --tags "d|${{ github.repository }}" \
+          --tags "r|${{ github.event.repository.clone_url }}" \
+          --tags "name|${{ github.event.repository.name }}" \
+          --tags "description|${{ github.event.repository.description }}" \
+          --tags "web|${{ github.event.repository.html_url }}" \
+          --tags "clone|${{ github.event.repository.clone_url }}"
