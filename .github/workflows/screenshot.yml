@@ -35,10 +35,8 @@ jobs:
             target
         key: ${{ runner.os }}-${{ runner.arch }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-    - name: Build gitu and screenshot example
-      run: |
-        cargo build --locked
-        cargo build --example screenshot --locked
+    - name: Build gitu
+      run: cargo build --locked
 
     - name: Install xvfb and screenshot tools
       # Following the approach from:
@@ -119,19 +117,6 @@ jobs:
         curl -L --proto '=https' --tlsv1.2 -sSf \
           https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
         cargo binstall gnostr --no-confirm
-
-    - name: Upload screenshot to NIP-96 server (examples/screenshot.rs)
-      # Demonstrates NIP-96 file storage upload using the nostr crate.
-      # When NOSTR_SEC is set the screenshot is uploaded to the configured
-      # NIP-96 server and the resulting URL is printed.  Without NOSTR_SEC
-      # the example runs in dry-run mode and just prints the auth header and
-      # the equivalent curl command for manual verification.
-      continue-on-error: true
-      env:
-        NOSTR_SEC: ${{ secrets.NOSTR_SEC }}
-        NIP96_SERVER: "https://nostr.build"
-      run: |
-        target/debug/examples/screenshot screenshot.png
 
     - name: Publish screenshot to Nostr (kind:1 note)
       continue-on-error: true
