@@ -115,7 +115,7 @@ jobs:
       run: |
         gnostr query \
           --authors "$GNOSTR_PUB" \
-          --kinds 1631 \
+          #--kinds 1631 \
           --limit 10
 
     # Query kind:1632 (NIP-34 closed status) events for GNOSTR_PUB
