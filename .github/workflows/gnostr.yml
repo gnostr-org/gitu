@@ -64,8 +64,7 @@ jobs:
       shell: bash
       run: |
         gnostr query \
-          --authors "$GNOSTR_PUB" \
-          --authors "$RANDYMCMILLAN_PUB" \
+          --authors "$GNOSTR_PUB,$RANDYMCMILLAN_PUB" \
           --kinds 1 \
           --limit 10
 
@@ -75,8 +74,7 @@ jobs:
       shell: bash
       run: |
         gnostr query \
-          --authors "$GNOSTR_PUB" \
-          --authors "$RANDYMCMILLAN_PUB" \
+          --authors "$GNOSTR_PUB,$RANDYMCMILLAN_PUB" \
           #--kinds 30617 \
           --limit 10
 
@@ -86,8 +84,7 @@ jobs:
       shell: bash
       run: |
         gnostr query \
-          --authors "$GNOSTR_PUB" \
-          --authors "$RANDYMCMILLAN_PUB" \
+          --authors "$GNOSTR_PUB,$RANDYMCMILLAN_PUB" \
           #--kinds 30618 \
           --limit 10
 
@@ -97,8 +94,7 @@ jobs:
       shell: bash
       run: |
         gnostr query \
-          --authors "$GNOSTR_PUB" \
-          --authors "$RANDYMCMILLAN_PUB" \
+          --authors "$GNOSTR_PUB,$RANDYMCMILLAN_PUB" \
           --kinds 1617 \
           --limit 10
 
@@ -108,8 +104,7 @@ jobs:
       shell: bash
       run: |
         gnostr query \
-          --authors "$GNOSTR_PUB" \
-          --authors "$RANDYMCMILLAN_PUB" \
+          --authors "$GNOSTR_PUB,$RANDYMCMILLAN_PUB" \
           --kinds 1621 \
           --limit 10
 
@@ -119,8 +114,7 @@ jobs:
       shell: bash
       run: |
         gnostr query \
-          --authors "$GNOSTR_PUB" \
-          --authors "$RANDYMCMILLAN_PUB" \
+          --authors "$GNOSTR_PUB,$RANDYMCMILLAN_PUB" \
           #--kinds 1631 \
           --limit 10
 
@@ -130,8 +124,7 @@ jobs:
       shell: bash
       run: |
         gnostr query \
-          --authors "$GNOSTR_PUB" \
-          --authors "$RANDYMCMILLAN_PUB" \
+          --authors "$GNOSTR_PUB,$RANDYMCMILLAN_PUB" \
           --kinds 1632 \
           --limit 10
 
