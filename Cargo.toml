@@ -19,7 +19,6 @@ unicode-width = "0.2.0"
 temp-env = "0.3.6"
 stdext = "0.3.3"
 url = "2.5.7"
-tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
 
 [profile.profiling]
 inherits = "dev"
@@ -79,5 +78,5 @@ smashquote = "0.1.2"
 imara-diff = { version = "0.2.0", default-features = false }
 fuzzy-matcher = "0.3.7"
 url = "2.5.7"
-nostr = { version = "0.44.2", features = ["nip96"] }
-nostr-sdk = { version = "0.44", features = ["nip96"] }
+nostr = "0.44.2"
+nostr-sdk = "0.44"
