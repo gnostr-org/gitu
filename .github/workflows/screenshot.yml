@@ -17,6 +17,8 @@ env:
 jobs:
   screenshot:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
     - uses: actions/checkout@v4
@@ -61,7 +63,9 @@ jobs:
         git config --global user.name "GitHub Actions"
 
     - name: Start virtual display (xvfb)
-      # Start a virtual framebuffer so xterm can render the gitu TUI
+      # Start a virtual framebuffer so xterm can render the gitu TUI.
+      # Resolution: 1280x800 gives room for a 160-column x 50-row xterm
+      # at 8x16 pixels per character (160*8=1280, 50*16=800).
       run: |
         sudo /usr/bin/Xvfb $DISPLAY -screen 0 1280x800x24 &
         sleep 2

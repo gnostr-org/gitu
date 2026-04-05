@@ -6,9 +6,9 @@ Set Padding 5
 Set FontSize 14
 
 Hide
-Type "git config --global user.email 'ci@example.com'"
+Type "git config --global user.email 'ci@github.com'"
 Enter
-Type "git config --global user.name 'CI'"
+Type "git config --global user.name 'GitHub Actions'"
 Enter
 Show
 
