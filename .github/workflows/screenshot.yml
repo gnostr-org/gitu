@@ -18,7 +18,7 @@ jobs:
   screenshot:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
 
     steps:
     - uses: actions/checkout@v4
@@ -35,8 +35,10 @@ jobs:
             target
         key: ${{ runner.os }}-${{ runner.arch }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-    - name: Build gitu
-      run: cargo build --locked
+    - name: Build gitu and screenshot example
+      run: |
+        cargo build --locked
+        cargo build --example screenshot --locked
 
     - name: Install xvfb and screenshot tools
       # Following the approach from:
@@ -92,10 +94,27 @@ jobs:
         kill $XTERM_PID 2>/dev/null || true
 
     - name: Upload screenshot artifact
+      id: upload_artifact
       uses: actions/upload-artifact@v4
       with:
         name: gitu-screenshot-${{ github.sha }}
         path: screenshot.png
+
+    - name: Commit screenshot to vhs/screenshot.png
+      run: |
+        # Authenticate with GITHUB_TOKEN so we can push
+        git remote set-url origin https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git
+
+        cp screenshot.png vhs/screenshot.png
+        git add vhs/screenshot.png
+        if git diff --cached --quiet; then
+          echo "screenshot unchanged — skipping commit"
+        else
+          git config user.email "ci@github.com"
+          git config user.name "GitHub Actions"
+          git commit -m "screenshot: ${{ github.sha }}"
+          git push origin HEAD:${{ github.ref_name }}
+        fi
 
     - name: Install cargo-binstall and gnostr
       continue-on-error: true
@@ -103,6 +122,19 @@ jobs:
         curl -L --proto '=https' --tlsv1.2 -sSf \
           https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
         cargo binstall gnostr --no-confirm
+
+    - name: Upload screenshot to NIP-96 server (examples/screenshot.rs)
+      # Demonstrates NIP-96 file storage upload using the nostr crate.
+      # When NOSTR_SEC is set the screenshot is uploaded to the configured
+      # NIP-96 server and the resulting URL is printed.  Without NOSTR_SEC
+      # the example runs in dry-run mode and just prints the auth header and
+      # the equivalent curl command for manual verification.
+      continue-on-error: true
+      env:
+        NOSTR_SEC: ${{ secrets.NOSTR_SEC }}
+        NIP96_SERVER: "https://nostr.build"
+      run: |
+        target/debug/examples/screenshot screenshot.png
 
     - name: Publish screenshot to Nostr (kind:1 note)
       continue-on-error: true
@@ -113,17 +145,20 @@ jobs:
           echo "NOSTR_SEC not configured — skipping Nostr screenshot note"
           exit 0
         fi
-        REPO="${{ github.repository }}"
         SHA="${{ github.sha }}"
         SHORT_SHA="${SHA:0:7}"
-        RUN_URL="https://github.com/$REPO/actions/runs/${{ github.run_id }}"
-        NOTE="gitu screenshot @ $SHORT_SHA — artifacts: $RUN_URL"
+        PNG_URL="https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref_name }}/vhs/screenshot.png"
+        ARTIFACT_URL="${{ steps.upload_artifact.outputs.artifact-url }}"
+        NOTE="gitu screenshot @ $SHORT_SHA — $PNG_URL"
         gnostr \
           --nsec "$NOSTR_SEC" \
           custom-event \
           --kind 1 \
           --content "$NOTE" \
-          --tags "r|$RUN_URL" \
+          --tags "r|$PNG_URL" \
+          --tags "r|$ARTIFACT_URL" \
+          --tags "p|$GNOSTR_PUB" \
+          --tags "p|$RANDYMCMILLAN_PUB" \
           --tags "t|gitu" \
           --tags "t|screenshot" \
           --tags "alt|gitu TUI screenshot for commit $SHORT_SHA"
