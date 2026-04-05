@@ -47,6 +47,31 @@ jobs:
       shell: bash
       run: gnostr custom-event --help
 
+    - name: gnostr set-metadata --help
+      shell: bash
+      run: gnostr set-metadata --help
+
+    # NIP-0/1 kind:0 — publish a Nostr set_metadata event on every push to master.
+    # Sets the profile metadata (name, picture, banner) for the Nostr identity associated with NOSTR_SEC.
+    # See https://github.com/nostr-protocol/nips/blob/master/01.md and https://github.com/nostr-protocol/nips/blob/master/00.md
+    - name: NIP-0/1 set-metadata event (push to master)
+      if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+      env:
+        NOSTR_SEC: ${{ secrets.NOSTR_SEC }}
+        REPO_NAME: ${{ github.event.repository.name }}
+      shell: bash
+      run: |
+        if [ -z "$NOSTR_SEC" ]; then
+          echo "NOSTR_SEC not configured — skipping NIP-0/1 kind:0 set-metadata event"
+          exit 0
+        fi
+        gnostr \
+          --nsec "$NOSTR_SEC" \
+          set-metadata \
+          --name "$REPO_NAME" \
+          -p "https://avatars.githubusercontent.com/u/135379339?s=400&u=11cb72cccbc2b13252867099546074c50caef1ae&v=4" \
+          -b "https://raw.githubusercontent.com/gnostr-org/gnostr-icons/refs/heads/master/banner/1024x341.png"
+
     # NIP-34 kind:30617 — publish a Nostr repository announcement on every push to master.
     # Declares the repository's existence, clone URL, and metadata to the Nostr network.
     # See https://github.com/nostr-protocol/nips/blob/master/34.md
