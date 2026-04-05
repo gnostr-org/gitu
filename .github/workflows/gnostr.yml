@@ -49,11 +49,18 @@ jobs:
 
     # NIP-34 kind:30617 — publish a Nostr repository announcement on every push to master.
     # Declares the repository's existence, clone URL, and metadata to the Nostr network.
+    # Note: the 'a' tag uses owner/repo as a stand-in for the full NIP-34 address
+    # (30617:<pubkey>:<d-tag>) because the Nostr pubkey is not available in CI context.
     # See https://github.com/nostr-protocol/nips/blob/master/34.md
     - name: NIP-34 repository announcement (push to master)
       if: github.event_name == 'push' && github.ref == 'refs/heads/master'
       env:
         NOSTR_SEC: ${{ secrets.NOSTR_SEC }}
+        REPO_NAME: ${{ github.event.repository.name }}
+        REPO_FULL_NAME: ${{ github.event.repository.full_name }}
+        REPO_DESCRIPTION: ${{ github.event.repository.description }}
+        REPO_HTML_URL: ${{ github.event.repository.html_url }}
+        REPO_CLONE_URL: ${{ github.event.repository.clone_url }}
       shell: bash
       run: |
         if [ -z "$NOSTR_SEC" ]; then
@@ -66,11 +73,11 @@ jobs:
           custom-event \
           --kind 30617 \
           --content "" \
-          --tags "d|${{ github.event.repository.name }}" \
-          --tags "name|${{ github.event.repository.full_name }}" \
-          --tags "description|${{ github.event.repository.description }}" \
-          --tags "web|${{ github.event.repository.html_url }}" \
-          --tags "clone|${{ github.event.repository.clone_url }}" \
+          --tags "d|$REPO_NAME" \
+          --tags "name|$REPO_FULL_NAME" \
+          --tags "description|$REPO_DESCRIPTION" \
+          --tags "web|$REPO_HTML_URL" \
+          --tags "clone|$REPO_CLONE_URL" \
           --tags "r|$EUC|euc"
 
     # NIP-34 kind:30618 — publish a Nostr repository state announcement on every push.
@@ -80,15 +87,17 @@ jobs:
       if: github.event_name == 'push'
       env:
         NOSTR_SEC: ${{ secrets.NOSTR_SEC }}
+        REPO_NAME: ${{ github.event.repository.name }}
+        GIT_REF: ${{ github.ref }}
+        REF_NAME: ${{ github.ref_name }}
+        HEAD_SHA: ${{ github.sha }}
       shell: bash
       run: |
         if [ -z "$NOSTR_SEC" ]; then
           echo "NOSTR_SEC not configured — skipping NIP-34 kind:30618 repository state announcement"
           exit 0
         fi
-        REF_NAME="${{ github.ref_name }}"
-        HEAD_SHA="${{ github.sha }}"
-        if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+        if [[ "$GIT_REF" == refs/tags/* ]]; then
           REF_PATH="refs/tags/$REF_NAME"
         else
           REF_PATH="refs/heads/$REF_NAME"
@@ -98,7 +107,7 @@ jobs:
           custom-event \
           --kind 30618 \
           --content "" \
-          --tags "d|${{ github.event.repository.name }}" \
+          --tags "d|$REPO_NAME" \
           --tags "$REF_PATH|$HEAD_SHA" \
           --tags "HEAD|ref: $REF_PATH"
 
