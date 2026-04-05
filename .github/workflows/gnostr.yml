@@ -33,3 +33,7 @@ jobs:
 
     - name: Install gnostr
       run: cargo binstall gnostr --no-confirm
+
+    - name: gnostr --help
+      shell: bash
+      run: gnostr --help
