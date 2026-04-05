@@ -1,0 +1,129 @@
+name: screenshot
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "master" ]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+  DISPLAY: ":99"
+  # NIP-05 well-known identifiers from https://github.com/gnostr-org/.github/blob/master/.well-known/nostr.json
+  GNOSTR_PUB: "a34b99f22c790c4e36b2b3c2c35a36db06226e41c692fc82b8b56ac1c540c5bd"
+  RANDYMCMILLAN_PUB: "edfa27d49d2af37ee331e1225bb6ed1912c6d999281b36d8018ad99bc3573c29"
+
+jobs:
+  screenshot:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Cache
+      uses: actions/cache@v4
+      with:
+        path: |
+            ~/.cargo/bin
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+        key: ${{ runner.os }}-${{ runner.arch }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Build gitu
+      run: cargo build --locked
+
+    - name: Install xvfb and screenshot tools
+      # Following the approach from:
+      # https://github.com/coinkite/bitcoinbinary.org/blob/main/.github/workflows/repro.yml
+      run: |
+        sudo apt-get update -y
+        sudo apt-get install -y \
+          xvfb \
+          xterm \
+          scrot \
+          ffmpeg \
+          libxkbcommon-x11-0 \
+          libxcb-icccm4 \
+          libxcb-image0 \
+          libxcb-keysyms1 \
+          libxcb-randr0 \
+          libxcb-render-util0 \
+          libxcb-xinerama0 \
+          xfonts-base
+
+    - name: Setup git identity for gitu
+      run: |
+        git config --global user.email "ci@github.com"
+        git config --global user.name "GitHub Actions"
+
+    - name: Start virtual display (xvfb)
+      # Start a virtual framebuffer so xterm can render the gitu TUI.
+      # Resolution: 1280x800 gives room for a 160-column x 50-row xterm
+      # at 8x16 pixels per character (160*8=1280, 50*16=800).
+      run: |
+        sudo /usr/bin/Xvfb $DISPLAY -screen 0 1280x800x24 &
+        sleep 2
+
+    - name: Capture screenshot of gitu via xterm
+      run: |
+        # Run gitu --print in xterm with -hold so the window stays open after exit.
+        # gitu --print renders one frame to the terminal then exits.
+        DISPLAY=$DISPLAY xterm \
+          -fg white -bg black \
+          -fa 'Monospace' -fs 12 \
+          -geometry 160x50 \
+          -hold \
+          -e "target/debug/gitu --print" &
+        XTERM_PID=$!
+
+        # Wait for xterm and gitu to render
+        sleep 3
+
+        # Take a screenshot of the virtual display
+        DISPLAY=$DISPLAY scrot screenshot.png
+
+        # Clean up
+        kill $XTERM_PID 2>/dev/null || true
+
+    - name: Upload screenshot artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: gitu-screenshot-${{ github.sha }}
+        path: screenshot.png
+
+    - name: Install cargo-binstall and gnostr
+      continue-on-error: true
+      run: |
+        curl -L --proto '=https' --tlsv1.2 -sSf \
+          https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
+        cargo binstall gnostr --no-confirm
+
+    - name: Publish screenshot to Nostr (kind:1 note)
+      continue-on-error: true
+      env:
+        NOSTR_SEC: ${{ secrets.NOSTR_SEC }}
+      run: |
+        if [ -z "$NOSTR_SEC" ]; then
+          echo "NOSTR_SEC not configured — skipping Nostr screenshot note"
+          exit 0
+        fi
+        REPO="${{ github.repository }}"
+        SHA="${{ github.sha }}"
+        SHORT_SHA="${SHA:0:7}"
+        RUN_URL="https://github.com/$REPO/actions/runs/${{ github.run_id }}"
+        NOTE="gitu screenshot @ $SHORT_SHA — artifacts: $RUN_URL"
+        gnostr \
+          --nsec "$NOSTR_SEC" \
+          custom-event \
+          --kind 1 \
+          --content "$NOTE" \
+          --tags "r|$RUN_URL" \
+          --tags "t|gitu" \
+          --tags "t|screenshot" \
+          --tags "alt|gitu TUI screenshot for commit $SHORT_SHA"
