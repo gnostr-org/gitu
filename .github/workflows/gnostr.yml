@@ -49,13 +49,12 @@ jobs:
 
     # NIP-34 kind:30617 — publish a Nostr repository announcement on every push to master.
     # Declares the repository's existence, clone URL, and metadata to the Nostr network.
-    # Note: the 'a' tag uses owner/repo as a stand-in for the full NIP-34 address
-    # (30617:<pubkey>:<d-tag>) because the Nostr pubkey is not available in CI context.
     # See https://github.com/nostr-protocol/nips/blob/master/34.md
     - name: NIP-34 repository announcement (push to master)
       if: github.event_name == 'push' && github.ref == 'refs/heads/master'
       env:
         NOSTR_SEC: ${{ secrets.NOSTR_SEC }}
+        NOSTR_PUB: ${{ secrets.NOSTR_PUB }}
         REPO_NAME: ${{ github.event.repository.name }}
         REPO_FULL_NAME: ${{ github.event.repository.full_name }}
         REPO_DESCRIPTION: ${{ github.event.repository.description }}
@@ -63,8 +62,8 @@ jobs:
         REPO_CLONE_URL: ${{ github.event.repository.clone_url }}
       shell: bash
       run: |
-        if [ -z "$NOSTR_SEC" ]; then
-          echo "NOSTR_SEC not configured — skipping NIP-34 kind:30617 repository announcement"
+        if [ -z "$NOSTR_SEC" ] || [ -z "$NOSTR_PUB" ]; then
+          echo "NOSTR_SEC or NOSTR_PUB not configured — skipping NIP-34 kind:30617 repository announcement"
           exit 0
         fi
         EUC=$(git rev-list --max-parents=0 HEAD)
@@ -87,14 +86,15 @@ jobs:
       if: github.event_name == 'push'
       env:
         NOSTR_SEC: ${{ secrets.NOSTR_SEC }}
+        NOSTR_PUB: ${{ secrets.NOSTR_PUB }}
         REPO_NAME: ${{ github.event.repository.name }}
         GIT_REF: ${{ github.ref }}
         REF_NAME: ${{ github.ref_name }}
         HEAD_SHA: ${{ github.sha }}
       shell: bash
       run: |
-        if [ -z "$NOSTR_SEC" ]; then
-          echo "NOSTR_SEC not configured — skipping NIP-34 kind:30618 repository state announcement"
+        if [ -z "$NOSTR_SEC" ] || [ -z "$NOSTR_PUB" ]; then
+          echo "NOSTR_SEC or NOSTR_PUB not configured — skipping NIP-34 kind:30618 repository state announcement"
           exit 0
         fi
         if [[ "$GIT_REF" == refs/tags/* ]]; then
@@ -112,13 +112,12 @@ jobs:
           --tags "HEAD|ref: $REF_PATH"
 
     # NIP-34 kind:1617 — publish a Nostr patch event when a pull request is opened or updated.
-    # Note: the 'a' tag uses owner/repo as a stand-in for the full NIP-34 address
-    # (30617:<pubkey>:<d-tag>) because the Nostr pubkey is not available in CI context.
     # See https://github.com/nostr-protocol/nips/blob/master/34.md
     - name: NIP-34 patch event (pull_request opened/updated)
       if: github.event_name == 'pull_request' && github.event.action != 'closed'
       env:
         NOSTR_SEC: ${{ secrets.NOSTR_SEC }}
+        NOSTR_PUB: ${{ secrets.NOSTR_PUB }}
         PR_NUMBER: ${{ github.event.pull_request.number }}
         PR_TITLE: ${{ github.event.pull_request.title }}
         PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -126,97 +125,98 @@ jobs:
         REPO: ${{ github.repository }}
       shell: bash
       run: |
-        if [ -z "$NOSTR_SEC" ]; then
-          echo "NOSTR_SEC not configured — skipping NIP-34 kind:1617 patch event"
+        if [ -z "$NOSTR_SEC" ] || [ -z "$NOSTR_PUB" ]; then
+          echo "NOSTR_SEC or NOSTR_PUB not configured — skipping NIP-34 kind:1617 patch event"
           exit 0
         fi
+        REPO_NAME="${REPO##*/}"
         PATCH=$(git format-patch "origin/$PR_BASE_REF"...HEAD --stdout)
         gnostr \
           --nsec "$NOSTR_SEC" \
           custom-event \
           --kind 1617 \
           --content "$PATCH" \
-          --tags "a|30617:$REPO" \
+          --tags "a|30617:$NOSTR_PUB:$REPO_NAME" \
           --tags "r|$PR_BASE_SHA" \
           --tags "t|root" \
           --tags "alt|git patch: PR #$PR_NUMBER: $PR_TITLE"
 
     # NIP-34 kind:1631 — publish a Nostr applied/merged status event when a pull request is merged.
-    # Note: the 'a' tag uses owner/repo as a stand-in for the full NIP-34 address
-    # (30617:<pubkey>:<d-tag>) because the Nostr pubkey is not available in CI context.
     # See https://github.com/nostr-protocol/nips/blob/master/34.md
     - name: NIP-34 merged status event (pull_request merged)
       if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
       env:
         NOSTR_SEC: ${{ secrets.NOSTR_SEC }}
+        NOSTR_PUB: ${{ secrets.NOSTR_PUB }}
         PR_NUMBER: ${{ github.event.pull_request.number }}
         PR_TITLE: ${{ github.event.pull_request.title }}
         MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
         REPO: ${{ github.repository }}
       shell: bash
       run: |
-        if [ -z "$NOSTR_SEC" ]; then
-          echo "NOSTR_SEC not configured — skipping NIP-34 kind:1631 merged status event"
+        if [ -z "$NOSTR_SEC" ] || [ -z "$NOSTR_PUB" ]; then
+          echo "NOSTR_SEC or NOSTR_PUB not configured — skipping NIP-34 kind:1631 merged status event"
           exit 0
         fi
+        REPO_NAME="${REPO##*/}"
         gnostr \
           --nsec "$NOSTR_SEC" \
           custom-event \
           --kind 1631 \
           --content "PR #$PR_NUMBER merged: $PR_TITLE" \
-          --tags "a|30617:$REPO" \
+          --tags "a|30617:$NOSTR_PUB:$REPO_NAME" \
           --tags "merge-commit|$MERGE_SHA" \
           --tags "r|$MERGE_SHA" \
           --tags "alt|merged: PR #$PR_NUMBER: $PR_TITLE"
 
     # NIP-34 kind:1632 — publish a Nostr closed status event when a pull request is closed without merging.
-    # Note: the 'a' tag uses owner/repo as a stand-in for the full NIP-34 address
-    # (30617:<pubkey>:<d-tag>) because the Nostr pubkey is not available in CI context.
     # See https://github.com/nostr-protocol/nips/blob/master/34.md
     - name: NIP-34 closed status event (pull_request closed without merge)
       if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == false
       env:
         NOSTR_SEC: ${{ secrets.NOSTR_SEC }}
+        NOSTR_PUB: ${{ secrets.NOSTR_PUB }}
         PR_NUMBER: ${{ github.event.pull_request.number }}
         PR_TITLE: ${{ github.event.pull_request.title }}
         REPO: ${{ github.repository }}
       shell: bash
       run: |
-        if [ -z "$NOSTR_SEC" ]; then
-          echo "NOSTR_SEC not configured — skipping NIP-34 kind:1632 closed status event"
+        if [ -z "$NOSTR_SEC" ] || [ -z "$NOSTR_PUB" ]; then
+          echo "NOSTR_SEC or NOSTR_PUB not configured — skipping NIP-34 kind:1632 closed status event"
           exit 0
         fi
+        REPO_NAME="${REPO##*/}"
         gnostr \
           --nsec "$NOSTR_SEC" \
           custom-event \
           --kind 1632 \
           --content "PR #$PR_NUMBER closed: $PR_TITLE" \
-          --tags "a|30617:$REPO" \
+          --tags "a|30617:$NOSTR_PUB:$REPO_NAME" \
           --tags "alt|closed: PR #$PR_NUMBER: $PR_TITLE"
 
     # NIP-34 kind:1621 — publish a Nostr issue event when a GitHub issue is opened.
-    # Note: the 'a' tag uses owner/repo as a stand-in for the full NIP-34 address
-    # (30617:<pubkey>:<d-tag>) because the Nostr pubkey is not available in CI context.
     # See https://github.com/nostr-protocol/nips/blob/master/34.md
     - name: NIP-34 issue event (issues opened)
       if: github.event_name == 'issues' && github.event.action == 'opened'
       env:
         NOSTR_SEC: ${{ secrets.NOSTR_SEC }}
+        NOSTR_PUB: ${{ secrets.NOSTR_PUB }}
         ISSUE_NUMBER: ${{ github.event.issue.number }}
         ISSUE_TITLE: ${{ github.event.issue.title }}
         ISSUE_BODY: ${{ github.event.issue.body }}
         REPO: ${{ github.repository }}
       shell: bash
       run: |
-        if [ -z "$NOSTR_SEC" ]; then
-          echo "NOSTR_SEC not configured — skipping NIP-34 kind:1621 issue event"
+        if [ -z "$NOSTR_SEC" ] || [ -z "$NOSTR_PUB" ]; then
+          echo "NOSTR_SEC or NOSTR_PUB not configured — skipping NIP-34 kind:1621 issue event"
           exit 0
         fi
+        REPO_NAME="${REPO##*/}"
         gnostr \
           --nsec "$NOSTR_SEC" \
           custom-event \
           --kind 1621 \
           --content "$ISSUE_BODY" \
-          --tags "a|30617:$REPO" \
+          --tags "a|30617:$NOSTR_PUB:$REPO_NAME" \
           --tags "subject|$ISSUE_TITLE" \
           --tags "alt|issue #$ISSUE_NUMBER: $ISSUE_TITLE"
