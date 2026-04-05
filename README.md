@@ -1,5 +1,5 @@
 ## It's Gitu! - A Git porcelain *outside* of Emacs
-[![CI](https://github.com/altsem/gitu/actions/workflows/ci.yml/badge.svg)](https://github.com/altsem/gitu/actions/workflows/ci.yml)
+[![CI](https://github.com/gnostr-org/gitu/actions/workflows/ci.yml/badge.svg)](https://github.com/gnostr-org/gitu/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/altsem/gitu/graph/badge.svg?token=5YWPU7GWFW)](https://codecov.io/gh/altsem/gitu)
 
 A terminal user interface for Git. Inspired by Magit.
