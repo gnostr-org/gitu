@@ -65,7 +65,7 @@ jobs:
       run: |
         gnostr query \
           --authors "$GNOSTR_PUB" \
-          --kinds 0 \
+          --kinds 1 \
           --limit 10
 
     # Query kind:30617 (NIP-34 repository announcement) events for GNOSTR_PUB
