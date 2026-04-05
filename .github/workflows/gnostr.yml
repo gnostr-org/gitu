@@ -54,7 +54,7 @@ jobs:
         fi
         PATCH=$(git format-patch origin/${{ github.base_ref }}...HEAD --stdout)
         gnostr \
-          --sec "$NOSTR_SEC" \
+          --nsec "$NOSTR_SEC" \
           custom-event \
           --kind 1617 \
           --content "$PATCH" \
@@ -76,7 +76,7 @@ jobs:
           exit 0
         fi
         gnostr \
-          --sec "$NOSTR_SEC" \
+          --nsec "$NOSTR_SEC" \
           custom-event \
           --kind 30617 \
           --content "" \
