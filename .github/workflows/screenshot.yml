@@ -92,6 +92,7 @@ jobs:
         kill $XTERM_PID 2>/dev/null || true
 
     - name: Upload screenshot artifact
+      id: upload_artifact
       uses: actions/upload-artifact@v4
       with:
         name: gitu-screenshot-${{ github.sha }}
@@ -113,17 +114,16 @@ jobs:
           echo "NOSTR_SEC not configured — skipping Nostr screenshot note"
           exit 0
         fi
-        REPO="${{ github.repository }}"
         SHA="${{ github.sha }}"
         SHORT_SHA="${SHA:0:7}"
-        RUN_URL="https://github.com/$REPO/actions/runs/${{ github.run_id }}"
-        NOTE="gitu screenshot @ $SHORT_SHA — artifacts: $RUN_URL"
+        ARTIFACT_URL="${{ steps.upload_artifact.outputs.artifact-url }}"
+        NOTE="gitu screenshot @ $SHORT_SHA — artifact: $ARTIFACT_URL"
         gnostr \
           --nsec "$NOSTR_SEC" \
           custom-event \
           --kind 1 \
           --content "$NOTE" \
-          --tags "r|$RUN_URL" \
+          --tags "r|$ARTIFACT_URL" \
           --tags "t|gitu" \
           --tags "t|screenshot" \
           --tags "alt|gitu TUI screenshot for commit $SHORT_SHA"
