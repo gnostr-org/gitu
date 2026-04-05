@@ -1004,6 +1004,7 @@ dependencies = [
  "temp-dir",
  "temp-env",
  "tinyvec",
+ "tokio",
  "toml",
  "tree-sitter",
  "tree-sitter-bash",
