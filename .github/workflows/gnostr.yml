@@ -68,13 +68,26 @@ jobs:
           echo "NOSTR_SEC not configured — skipping NIP-0/1 kind:0 set-metadata event"
           exit 0
         fi
+        # Demonstrate fetching NIP-05 well-known data and using it to set --nip05
+        NIP05_IDENTIFIER="gnostr@gnostr-org.github.io"
+        NIP05_URL="https://gnostr-org.github.io/.well-known/nostr.json"
+        echo "Fetching NIP-05 well-known data from $NIP05_URL ..."
+        NIP05_DATA=$(curl -sf "$NIP05_URL" 2>/dev/null || true)
+        if [ -n "$NIP05_DATA" ] && echo "$NIP05_DATA" | python3 -m json.tool > /dev/null 2>&1; then
+          echo "NIP-05 well-known data:"
+          echo "$NIP05_DATA"
+          NIP05_ARG="--nip05 $NIP05_IDENTIFIER"
+        else
+          echo "NIP-05 well-known data not available at $NIP05_URL — skipping --nip05"
+          NIP05_ARG=""
+        fi
         gnostr \
           --nsec "$NOSTR_SEC" \
           set-metadata \
           --name "$REPO_NAME" \
           -p "https://avatars.githubusercontent.com/u/135379339?s=400&u=11cb72cccbc2b13252867099546074c50caef1ae&v=4" \
           -b "https://raw.githubusercontent.com/gnostr-org/gnostr-icons/refs/heads/master/banner/1024x341.png" \
-          --nip05 "gnostr@gnostr-org.github.io"
+          $NIP05_ARG
 
     # NIP-34 kind:30617 — publish a Nostr repository announcement on every push to master.
     # Declares the repository's existence, clone URL, and metadata to the Nostr network.
