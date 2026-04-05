@@ -103,34 +103,47 @@ jobs:
           --tags "HEAD|ref: $REF_PATH"
 
     # NIP-34 kind:1617 — publish a Nostr patch event when a pull request is opened or updated.
+    # Note: the 'a' tag uses owner/repo as a stand-in for the full NIP-34 address
+    # (30617:<pubkey>:<d-tag>) because the Nostr pubkey is not available in CI context.
     # See https://github.com/nostr-protocol/nips/blob/master/34.md
     - name: NIP-34 patch event (pull_request opened/updated)
       if: github.event_name == 'pull_request' && github.event.action != 'closed'
       env:
         NOSTR_SEC: ${{ secrets.NOSTR_SEC }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+        PR_TITLE: ${{ github.event.pull_request.title }}
+        PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        PR_BASE_REF: ${{ github.base_ref }}
+        REPO: ${{ github.repository }}
       shell: bash
       run: |
         if [ -z "$NOSTR_SEC" ]; then
           echo "NOSTR_SEC not configured — skipping NIP-34 kind:1617 patch event"
           exit 0
         fi
-        PATCH=$(git format-patch origin/${{ github.base_ref }}...HEAD --stdout)
+        PATCH=$(git format-patch "origin/$PR_BASE_REF"...HEAD --stdout)
         gnostr \
           --nsec "$NOSTR_SEC" \
           custom-event \
           --kind 1617 \
           --content "$PATCH" \
-          --tags "a|30617:${{ github.repository }}" \
-          --tags "r|${{ github.event.pull_request.base.sha }}" \
+          --tags "a|30617:$REPO" \
+          --tags "r|$PR_BASE_SHA" \
           --tags "t|root" \
-          --tags "alt|git patch: PR #${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}"
+          --tags "alt|git patch: PR #$PR_NUMBER: $PR_TITLE"
 
     # NIP-34 kind:1631 — publish a Nostr applied/merged status event when a pull request is merged.
+    # Note: the 'a' tag uses owner/repo as a stand-in for the full NIP-34 address
+    # (30617:<pubkey>:<d-tag>) because the Nostr pubkey is not available in CI context.
     # See https://github.com/nostr-protocol/nips/blob/master/34.md
     - name: NIP-34 merged status event (pull_request merged)
       if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
       env:
         NOSTR_SEC: ${{ secrets.NOSTR_SEC }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+        PR_TITLE: ${{ github.event.pull_request.title }}
+        MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+        REPO: ${{ github.repository }}
       shell: bash
       run: |
         if [ -z "$NOSTR_SEC" ]; then
@@ -141,18 +154,23 @@ jobs:
           --nsec "$NOSTR_SEC" \
           custom-event \
           --kind 1631 \
-          --content "PR #${{ github.event.pull_request.number }} merged: ${{ github.event.pull_request.title }}" \
-          --tags "a|30617:${{ github.repository }}" \
-          --tags "merge-commit|${{ github.event.pull_request.merge_commit_sha }}" \
-          --tags "r|${{ github.event.pull_request.merge_commit_sha }}" \
-          --tags "alt|merged: PR #${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}"
+          --content "PR #$PR_NUMBER merged: $PR_TITLE" \
+          --tags "a|30617:$REPO" \
+          --tags "merge-commit|$MERGE_SHA" \
+          --tags "r|$MERGE_SHA" \
+          --tags "alt|merged: PR #$PR_NUMBER: $PR_TITLE"
 
     # NIP-34 kind:1632 — publish a Nostr closed status event when a pull request is closed without merging.
+    # Note: the 'a' tag uses owner/repo as a stand-in for the full NIP-34 address
+    # (30617:<pubkey>:<d-tag>) because the Nostr pubkey is not available in CI context.
     # See https://github.com/nostr-protocol/nips/blob/master/34.md
     - name: NIP-34 closed status event (pull_request closed without merge)
       if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == false
       env:
         NOSTR_SEC: ${{ secrets.NOSTR_SEC }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+        PR_TITLE: ${{ github.event.pull_request.title }}
+        REPO: ${{ github.repository }}
       shell: bash
       run: |
         if [ -z "$NOSTR_SEC" ]; then
@@ -163,16 +181,22 @@ jobs:
           --nsec "$NOSTR_SEC" \
           custom-event \
           --kind 1632 \
-          --content "PR #${{ github.event.pull_request.number }} closed: ${{ github.event.pull_request.title }}" \
-          --tags "a|30617:${{ github.repository }}" \
-          --tags "alt|closed: PR #${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}"
+          --content "PR #$PR_NUMBER closed: $PR_TITLE" \
+          --tags "a|30617:$REPO" \
+          --tags "alt|closed: PR #$PR_NUMBER: $PR_TITLE"
 
     # NIP-34 kind:1621 — publish a Nostr issue event when a GitHub issue is opened.
+    # Note: the 'a' tag uses owner/repo as a stand-in for the full NIP-34 address
+    # (30617:<pubkey>:<d-tag>) because the Nostr pubkey is not available in CI context.
     # See https://github.com/nostr-protocol/nips/blob/master/34.md
     - name: NIP-34 issue event (issues opened)
       if: github.event_name == 'issues' && github.event.action == 'opened'
       env:
         NOSTR_SEC: ${{ secrets.NOSTR_SEC }}
+        ISSUE_NUMBER: ${{ github.event.issue.number }}
+        ISSUE_TITLE: ${{ github.event.issue.title }}
+        ISSUE_BODY: ${{ github.event.issue.body }}
+        REPO: ${{ github.repository }}
       shell: bash
       run: |
         if [ -z "$NOSTR_SEC" ]; then
@@ -183,7 +207,7 @@ jobs:
           --nsec "$NOSTR_SEC" \
           custom-event \
           --kind 1621 \
-          --content "${{ github.event.issue.body }}" \
-          --tags "a|30617:${{ github.repository }}" \
-          --tags "subject|${{ github.event.issue.title }}" \
-          --tags "alt|issue #${{ github.event.issue.number }}: ${{ github.event.issue.title }}"
+          --content "$ISSUE_BODY" \
+          --tags "a|30617:$REPO" \
+          --tags "subject|$ISSUE_TITLE" \
+          --tags "alt|issue #$ISSUE_NUMBER: $ISSUE_TITLE"
