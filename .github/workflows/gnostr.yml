@@ -75,8 +75,8 @@ jobs:
       run: |
         gnostr query \
           --authors "$GNOSTR_PUB,$RANDYMCMILLAN_PUB" \
-          \#--kinds 30617 \
-          --limit 10
+          --kinds 30617 \
+          --limit 10 # TODO add timeout
 
     # Query kind:30618 (NIP-34 repository state announcement) events for GNOSTR_PUB
     - name: gnostr query kind:30618 repository state announcement events
@@ -85,8 +85,8 @@ jobs:
       run: |
         gnostr query \
           --authors "$GNOSTR_PUB,$RANDYMCMILLAN_PUB" \
-          \#--kinds 30618 \
-          --limit 10
+          --kinds 30618 \
+          --limit 10 # TODO add timeout
 
     # Query kind:1617 (NIP-34 patch) events for GNOSTR_PUB
     - name: gnostr query kind:1617 patch events
@@ -115,8 +115,8 @@ jobs:
       run: |
         gnostr query \
           --authors "$GNOSTR_PUB,$RANDYMCMILLAN_PUB" \
-          \#--kinds 1631 \
-          --limit 10
+          --kinds 1631 \
+          --limit 10 # TODO add timeout
 
     # Query kind:1632 (NIP-34 closed status) events for GNOSTR_PUB
     - name: gnostr query kind:1632 closed status events
