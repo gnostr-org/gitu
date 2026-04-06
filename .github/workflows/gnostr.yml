@@ -287,12 +287,12 @@ jobs:
 
     # NIP-34 kind:1631 — publish a Nostr applied/merged status event for direct merge commits
     # pushed to master or main (i.e. merges that bypass the GitHub PR workflow).
+    # A true merge commit is detected by verifying it has 2+ parents via git rev-list.
     # See https://github.com/nostr-protocol/nips/blob/master/34.md
     - name: NIP-34 merged status event (direct merge commit to master/main)
       if: >
         github.event_name == 'push' &&
-        (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main') &&
-        startsWith(github.event.head_commit.message, 'Merge')
+        (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
       env:
         NOSTR_SEC: ${{ secrets.NOSTR_SEC }}
         NOSTR_PUB: ${{ secrets.NOSTR_PUB }}
@@ -303,6 +303,12 @@ jobs:
       run: |
         if [ -z "$NOSTR_SEC" ] || [ -z "$NOSTR_PUB" ]; then
           echo "NOSTR_SEC or NOSTR_PUB not configured — skipping NIP-34 kind:1631 merged status event"
+          exit 0
+        fi
+        # Only emit kind:1631 for true merge commits (2+ parents).
+        PARENT_COUNT=$(git rev-list --parents -n 1 "$HEAD_SHA" | wc -w)
+        if [ "$PARENT_COUNT" -lt 3 ]; then
+          echo "HEAD commit $HEAD_SHA is not a merge commit (parent count: $((PARENT_COUNT - 1))) — skipping"
           exit 0
         fi
         REPO_NAME="${REPO##*/}"
