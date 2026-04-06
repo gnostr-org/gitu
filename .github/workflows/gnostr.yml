@@ -4,7 +4,7 @@ on:
   push:
     branches: [ "**" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "master", "main" ]
     types: [ opened, synchronize, reopened, closed ]
   issues:
     types: [ opened ]
@@ -75,7 +75,7 @@ jobs:
       run: |
         gnostr query \
           --authors "$GNOSTR_PUB,$RANDYMCMILLAN_PUB" \
-          #--kinds 30617 \
+          --kinds 30617 \
           --limit 10
 
     # Query kind:30618 (NIP-34 repository state announcement) events for GNOSTR_PUB
@@ -85,7 +85,7 @@ jobs:
       run: |
         gnostr query \
           --authors "$GNOSTR_PUB,$RANDYMCMILLAN_PUB" \
-          #--kinds 30618 \
+          --kinds 30618 \
           --limit 10
 
     # Query kind:1617 (NIP-34 patch) events for GNOSTR_PUB
@@ -115,7 +115,7 @@ jobs:
       run: |
         gnostr query \
           --authors "$GNOSTR_PUB,$RANDYMCMILLAN_PUB" \
-          #--kinds 1631 \
+          --kinds 1631 \
           --limit 10
 
     # Query kind:1632 (NIP-34 closed status) events for GNOSTR_PUB
@@ -128,11 +128,11 @@ jobs:
           --kinds 1632 \
           --limit 10
 
-    # NIP-0/1 kind:0 — publish a Nostr set_metadata event on every push to master.
+    # NIP-0/1 kind:0 — publish a Nostr set_metadata event on every push to master or main.
     # Sets the profile metadata (name, picture, banner) for the Nostr identity associated with NOSTR_SEC.
     # See https://github.com/nostr-protocol/nips/blob/master/01.md and https://github.com/nostr-protocol/nips/blob/master/00.md
-    - name: NIP-0/1 set-metadata event (push to master)
-      if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    - name: NIP-0/1 set-metadata event (push to master/main)
+      if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
       env:
         NOSTR_SEC: ${{ secrets.NOSTR_SEC }}
         REPO_NAME: ${{ github.event.repository.name }}
@@ -163,11 +163,11 @@ jobs:
           -b "https://raw.githubusercontent.com/gnostr-org/gnostr-icons/refs/heads/master/banner/1024x341.png" \
           $NIP05_ARG
 
-    # NIP-34 kind:30617 — publish a Nostr repository announcement on every push to master.
+    # NIP-34 kind:30617 — publish a Nostr repository announcement on every push to master or main.
     # Declares the repository's existence, clone URL, and metadata to the Nostr network.
     # See https://github.com/nostr-protocol/nips/blob/master/34.md
-    - name: NIP-34 repository announcement (push to master)
-      if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    - name: NIP-34 repository announcement (push to master/main)
+      if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
       env:
         NOSTR_SEC: ${{ secrets.NOSTR_SEC }}
         NOSTR_PUB: ${{ secrets.NOSTR_PUB }}
@@ -284,6 +284,44 @@ jobs:
           --tags "merge-commit|$MERGE_SHA" \
           --tags "r|$MERGE_SHA" \
           --tags "alt|merged: PR #$PR_NUMBER: $PR_TITLE"
+
+    # NIP-34 kind:1631 — publish a Nostr applied/merged status event for direct merge commits
+    # pushed to master or main (i.e. merges that bypass the GitHub PR workflow).
+    # A true merge commit is detected by verifying it has 2+ parents via git rev-list.
+    # See https://github.com/nostr-protocol/nips/blob/master/34.md
+    - name: NIP-34 merged status event (direct merge commit to master/main)
+      if: >
+        github.event_name == 'push' &&
+        (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
+      env:
+        NOSTR_SEC: ${{ secrets.NOSTR_SEC }}
+        NOSTR_PUB: ${{ secrets.NOSTR_PUB }}
+        HEAD_SHA: ${{ github.sha }}
+        HEAD_MSG: ${{ github.event.head_commit.message }}
+        REPO: ${{ github.repository }}
+      shell: bash
+      run: |
+        if [ -z "$NOSTR_SEC" ] || [ -z "$NOSTR_PUB" ]; then
+          echo "NOSTR_SEC or NOSTR_PUB not configured — skipping NIP-34 kind:1631 merged status event"
+          exit 0
+        fi
+        # Only emit kind:1631 for true merge commits (2+ parents).
+        PARENT_COUNT=$(git rev-list --parents -n 1 "$HEAD_SHA" | wc -w)
+        if [ "$PARENT_COUNT" -lt 3 ]; then
+          echo "HEAD commit $HEAD_SHA is not a merge commit (parent count: $((PARENT_COUNT - 1))) — skipping"
+          exit 0
+        fi
+        REPO_NAME="${REPO##*/}"
+        SUBJECT=$(echo "$HEAD_MSG" | head -1)
+        gnostr \
+          --nsec "$NOSTR_SEC" \
+          custom-event \
+          --kind 1631 \
+          --content "$SUBJECT" \
+          --tags "a|30617:$NOSTR_PUB:$REPO_NAME" \
+          --tags "merge-commit|$HEAD_SHA" \
+          --tags "r|$HEAD_SHA" \
+          --tags "alt|merged: $SUBJECT"
 
     # NIP-34 kind:1632 — publish a Nostr closed status event when a pull request is closed without merging.
     # See https://github.com/nostr-protocol/nips/blob/master/34.md
