@@ -273,6 +273,7 @@ jobs:
     # Query kind:1 (set-metadata) events for GNOSTR_PUB
     - name: gnostr query kind:1 set-metadata events
       continue-on-error: true
+      timeout-minutes: 1
       shell: bash
       run: |
         gnostr query \
@@ -283,6 +284,7 @@ jobs:
     # Query kind:30617 (NIP-34 repository announcement) events for GNOSTR_PUB
     - name: gnostr query kind:30617 repository announcement events
       continue-on-error: true
+      timeout-minutes: 1
       shell: bash
       run: |
         gnostr query \
@@ -293,6 +295,7 @@ jobs:
     # Query kind:30618 (NIP-34 repository state announcement) events for GNOSTR_PUB
     - name: gnostr query kind:30618 repository state announcement events
       continue-on-error: true
+      timeout-minutes: 1
       shell: bash
       run: |
         gnostr query \
@@ -303,6 +306,7 @@ jobs:
     # Query kind:1617 (NIP-34 patch) events for GNOSTR_PUB
     - name: gnostr query kind:1617 patch events
       continue-on-error: true
+      timeout-minutes: 1
       shell: bash
       run: |
         gnostr query \
@@ -313,6 +317,7 @@ jobs:
     # Query kind:1621 (NIP-34 issue) events for GNOSTR_PUB
     - name: gnostr query kind:1621 issue events
       continue-on-error: true
+      timeout-minutes: 1
       shell: bash
       run: |
         gnostr query \
@@ -323,6 +328,7 @@ jobs:
     # Query kind:1631 (NIP-34 merged status) events for GNOSTR_PUB
     - name: gnostr query kind:1631 merged status events
       continue-on-error: true
+      timeout-minutes: 1
       shell: bash
       run: |
         gnostr query \
@@ -333,6 +339,7 @@ jobs:
     # Query kind:1632 (NIP-34 closed status) events for GNOSTR_PUB
     - name: gnostr query kind:1632 closed status events
       continue-on-error: true
+      timeout-minutes: 1
       shell: bash
       run: |
         gnostr query \
