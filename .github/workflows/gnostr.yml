@@ -58,76 +58,6 @@ jobs:
       shell: bash
       run: gnostr query --help
 
-    # Query kind:0 (set-metadata) events for GNOSTR_PUB
-    - name: gnostr query kind:1 set-metadata events
-      continue-on-error: true
-      shell: bash
-      run: |
-        gnostr query \
-          --authors "$GNOSTR_PUB,$RANDYMCMILLAN_PUB" \
-          --kinds 1 \
-          --limit 10
-
-    # Query kind:30617 (NIP-34 repository announcement) events for GNOSTR_PUB
-    - name: gnostr query kind:30617 repository announcement events
-      continue-on-error: true
-      shell: bash
-      run: |
-        gnostr query \
-          --authors "$GNOSTR_PUB,$RANDYMCMILLAN_PUB" \
-          #--kinds 30617 \
-          --limit 10
-
-    # Query kind:30618 (NIP-34 repository state announcement) events for GNOSTR_PUB
-    - name: gnostr query kind:30618 repository state announcement events
-      continue-on-error: true
-      shell: bash
-      run: |
-        gnostr query \
-          --authors "$GNOSTR_PUB,$RANDYMCMILLAN_PUB" \
-          #--kinds 30618 \
-          --limit 10
-
-    # Query kind:1617 (NIP-34 patch) events for GNOSTR_PUB
-    - name: gnostr query kind:1617 patch events
-      continue-on-error: true
-      shell: bash
-      run: |
-        gnostr query \
-          --authors "$GNOSTR_PUB,$RANDYMCMILLAN_PUB" \
-          --kinds 1617 \
-          --limit 10
-
-    # Query kind:1621 (NIP-34 issue) events for GNOSTR_PUB
-    - name: gnostr query kind:1621 issue events
-      continue-on-error: true
-      shell: bash
-      run: |
-        gnostr query \
-          --authors "$GNOSTR_PUB,$RANDYMCMILLAN_PUB" \
-          --kinds 1621 \
-          --limit 10
-
-    # Query kind:1631 (NIP-34 merged status) events for GNOSTR_PUB
-    - name: gnostr query kind:1631 merged status events
-      continue-on-error: true
-      shell: bash
-      run: |
-        gnostr query \
-          --authors "$GNOSTR_PUB,$RANDYMCMILLAN_PUB" \
-          #--kinds 1631 \
-          --limit 10
-
-    # Query kind:1632 (NIP-34 closed status) events for GNOSTR_PUB
-    - name: gnostr query kind:1632 closed status events
-      continue-on-error: true
-      shell: bash
-      run: |
-        gnostr query \
-          --authors "$GNOSTR_PUB,$RANDYMCMILLAN_PUB" \
-          --kinds 1632 \
-          --limit 10
-
     # NIP-0/1 kind:0 — publish a Nostr set_metadata event on every push to master.
     # Sets the profile metadata (name, picture, banner) for the Nostr identity associated with NOSTR_SEC.
     # See https://github.com/nostr-protocol/nips/blob/master/01.md and https://github.com/nostr-protocol/nips/blob/master/00.md
@@ -336,3 +266,76 @@ jobs:
           --tags "a|30617:$NOSTR_PUB:$REPO_NAME" \
           --tags "subject|$ISSUE_TITLE" \
           --tags "alt|issue #$ISSUE_NUMBER: $ISSUE_TITLE"
+
+    # Query steps — run after all NIP-34 events have been published so we retrieve
+    # the events that were just sent from the network.
+
+    # Query kind:1 (set-metadata) events for GNOSTR_PUB
+    - name: gnostr query kind:1 set-metadata events
+      continue-on-error: true
+      shell: bash
+      run: |
+        gnostr query \
+          --authors "$GNOSTR_PUB,$RANDYMCMILLAN_PUB" \
+          --kinds 1 \
+          --limit 10
+
+    # Query kind:30617 (NIP-34 repository announcement) events for GNOSTR_PUB
+    - name: gnostr query kind:30617 repository announcement events
+      continue-on-error: true
+      shell: bash
+      run: |
+        gnostr query \
+          --authors "$GNOSTR_PUB,$RANDYMCMILLAN_PUB" \
+          --kinds 30617 \
+          --limit 10
+
+    # Query kind:30618 (NIP-34 repository state announcement) events for GNOSTR_PUB
+    - name: gnostr query kind:30618 repository state announcement events
+      continue-on-error: true
+      shell: bash
+      run: |
+        gnostr query \
+          --authors "$GNOSTR_PUB,$RANDYMCMILLAN_PUB" \
+          --kinds 30618 \
+          --limit 10
+
+    # Query kind:1617 (NIP-34 patch) events for GNOSTR_PUB
+    - name: gnostr query kind:1617 patch events
+      continue-on-error: true
+      shell: bash
+      run: |
+        gnostr query \
+          --authors "$GNOSTR_PUB,$RANDYMCMILLAN_PUB" \
+          --kinds 1617 \
+          --limit 10
+
+    # Query kind:1621 (NIP-34 issue) events for GNOSTR_PUB
+    - name: gnostr query kind:1621 issue events
+      continue-on-error: true
+      shell: bash
+      run: |
+        gnostr query \
+          --authors "$GNOSTR_PUB,$RANDYMCMILLAN_PUB" \
+          --kinds 1621 \
+          --limit 10
+
+    # Query kind:1631 (NIP-34 merged status) events for GNOSTR_PUB
+    - name: gnostr query kind:1631 merged status events
+      continue-on-error: true
+      shell: bash
+      run: |
+        gnostr query \
+          --authors "$GNOSTR_PUB,$RANDYMCMILLAN_PUB" \
+          --kinds 1631 \
+          --limit 10
+
+    # Query kind:1632 (NIP-34 closed status) events for GNOSTR_PUB
+    - name: gnostr query kind:1632 closed status events
+      continue-on-error: true
+      shell: bash
+      run: |
+        gnostr query \
+          --authors "$GNOSTR_PUB,$RANDYMCMILLAN_PUB" \
+          --kinds 1632 \
+          --limit 10
