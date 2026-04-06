@@ -279,6 +279,7 @@ jobs:
         gnostr query \
           --authors "$GNOSTR_PUB,$RANDYMCMILLAN_PUB" \
           --kinds 1 \
+          --kinds 0 \
           --limit 10
 
     # Query kind:30617 (NIP-34 repository announcement) events for GNOSTR_PUB
