@@ -271,15 +271,14 @@ jobs:
     # the events that were just sent from the network.
 
     # Query kind:1 (set-metadata) events for GNOSTR_PUB
-    - name: gnostr query kind:1 set-metadata events
+    - name: gnostr query kind:0,1 set-metadata events
       continue-on-error: true
       timeout-minutes: 1
       shell: bash
       run: |
         gnostr query \
           --authors "$GNOSTR_PUB,$RANDYMCMILLAN_PUB" \
-          --kinds 1 \
-          --kinds 0 \
+          --kinds 0,1 \
           --limit 10
 
     # Query kind:30617 (NIP-34 repository announcement) events for GNOSTR_PUB
