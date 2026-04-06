@@ -16,6 +16,7 @@ temp-dir = "0.1.16"
 criterion = "0.8.1"
 insta = "1.46.0"
 unicode-width = "0.2.0"
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
 temp-env = "0.3.6"
 stdext = "0.3.3"
 url = "2.5.7"
@@ -78,5 +79,5 @@ smashquote = "0.1.2"
 imara-diff = { version = "0.2.0", default-features = false }
 fuzzy-matcher = "0.3.7"
 url = "2.5.7"
-nostr = "0.44.2"
+nostr = { version = "0.44.2", features = ["nip96"] }
 nostr-sdk = "0.44"
